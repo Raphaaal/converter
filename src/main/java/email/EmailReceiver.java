@@ -1,3 +1,4 @@
+//https://www.codejava.net/java-ee/javamail/receive-e-mail-messages-from-a-pop3-imap-server
 package email;
  
 import java.util.Properties;
@@ -155,12 +156,12 @@ public class EmailReceiver {
  
         // for IMAP
         String protocol = "imap";
-        String host = "imap.gmail.com";
+        String host = "ssl0.ovh.net";
         String port = "993";
  
- 
-        String userName = "your_email_address";
-        String password = "your_email_password";
+        
+        String userName = "topdf@middleman.paris";
+        String password = "azertyuiop";
  
         EmailReceiver receiver = new EmailReceiver();
         receiver.downloadEmails(protocol, host, port, userName, password);
