@@ -15,6 +15,8 @@ import com.convertapi.ConvertApi;
 public class toPdf
 {
 
+	// DOCUMENTATION : https://github.com/ConvertAPI/convertapi-java
+	
     public static void main( String[] args ) {
         ConvertApi.convertFile("test.rtf", "result_rtf.pdf", "3q5DgWSGJshJhRKA");
         System.out.println("Convesion done.");
