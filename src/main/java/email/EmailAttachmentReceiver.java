@@ -3,7 +3,13 @@ package email;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.Normalizer;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Queue;
 
 import javax.mail.Address;
 import javax.mail.Folder;
@@ -20,6 +26,7 @@ import javax.mail.event.MessageChangedListener;
 import javax.mail.event.MessageCountEvent;
 import javax.mail.event.MessageCountListener;
 import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeUtility;
 
 import com.sun.mail.imap.IMAPFolder;
 import com.sun.mail.imap.IMAPStore;
@@ -32,7 +39,9 @@ import com.sun.mail.imap.IMAPStore;
  *
  */
 public class EmailAttachmentReceiver {
+
 	private String saveDirectory;
+	private Queue<Attachment> messagesAttachments;
 
 	/**
 	 * Sets the directory where attached files will be stored.
@@ -42,6 +51,10 @@ public class EmailAttachmentReceiver {
 		this.saveDirectory = dir;
 	}
 
+	public void setMessagesAttachmentsFIFO(Queue<Attachment> messagesAttachments) {
+		this.messagesAttachments = messagesAttachments;
+	}
+
 	/**
 	 * Downloads new messages and saves attachments to disk if any.
 	 * @param host
@@ -49,10 +62,9 @@ public class EmailAttachmentReceiver {
 	 * @param userName
 	 * @param password
 	 */
-	public void downloadEmailAttachments(String host, String port,
-			String userName, String password) {
-
-
+	private Date lastDate = new GregorianCalendar(2019, 01, 01).getTime();
+	public void downloadEmailAttachments(String host, String port, String userName, String password) {
+		Map<String, String> attachFilesNamesAndDate = new HashMap<String, String>();
 		Properties properties = new Properties();
 
 		// server setting
@@ -60,11 +72,9 @@ public class EmailAttachmentReceiver {
 		properties.put("mail.imap.port", port);
 
 		// SSL setting
-		properties.setProperty("mail.imap.socketFactory.class",
-				"javax.net.ssl.SSLSocketFactory");
+		properties.setProperty("mail.imap.socketFactory.class","javax.net.ssl.SSLSocketFactory");
 		properties.setProperty("mail.imap.socketFactory.fallback", "false");
-		properties.setProperty("mail.imap.socketFactory.port",
-				String.valueOf(port));
+		properties.setProperty("mail.imap.socketFactory.port", String.valueOf(port));
 
 		Session session = Session.getDefaultInstance(properties);
 
@@ -85,7 +95,7 @@ public class EmailAttachmentReceiver {
 				Address[] fromAddress = message.getFrom();
 				String from = fromAddress[0].toString();
 				String subject = message.getSubject();
-				String sentDate = message.getSentDate().toString();
+				Date sentDate = message.getSentDate();
 
 				String contentType = message.getContentType();
 				String messageContent = "";
@@ -101,12 +111,20 @@ public class EmailAttachmentReceiver {
 						MimeBodyPart part = (MimeBodyPart) multiPart.getBodyPart(partCount);
 						if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
 							// this part is attachment
-							String fileName = part.getFileName();
+							String encodedAttachmentName = MimeUtility.decodeText(part.getFileName()); 
+							String decodedAttachmentname=  Normalizer.normalize(encodedAttachmentName , Normalizer.Form.NFC);
+							String fileName = decodedAttachmentname;
+							// TODO : Pb lorsque le mail contient plusieurs PJ
 							attachFiles += fileName + ", ";
 							part.saveFile(saveDirectory + File.separator + fileName);
 						} else {
 							// this part may be the message content
 							messageContent = part.getContent().toString();
+						}
+						if (!attachFiles.equals("") && sentDate.after(lastDate)) {
+							String sender = from.substring(from.indexOf("<") + 1, from.indexOf(">"));
+							messagesAttachments.offer(new Attachment(attachFiles, sender, sentDate));
+							lastDate = sentDate;
 						}
 					}
 
@@ -120,7 +138,8 @@ public class EmailAttachmentReceiver {
 						messageContent = content.toString();
 					}
 				}
-
+				
+				/*
 				// print out details of each message
 				System.out.println("Message #" + (i + 1) + ":");
 				System.out.println("\t From: " + from);
@@ -128,6 +147,7 @@ public class EmailAttachmentReceiver {
 				System.out.println("\t Sent Date: " + sentDate);
 				System.out.println("\t Message: " + messageContent);
 				System.out.println("\t Attachments: " + attachFiles);
+				*/
 			}
 
 			// disconnect
@@ -273,8 +293,8 @@ System.out.println("Text: " + message.getContent().toString());
 		EmailAttachmentReceiver receiver = new EmailAttachmentReceiver();
 		receiver.setSaveDirectory(saveDirectory);
 		receiver.downloadEmailAttachments(host, port, userName, password);
-		
-	    check(host, port, userName, password);
+
+		check(host, port, userName, password);
 
 
 	}
