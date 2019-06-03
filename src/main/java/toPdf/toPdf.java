@@ -26,12 +26,11 @@ public class toPdf
 
 	// DOCUMENTATION : https://github.com/ConvertAPI/convertapi-java
 
-	//Test de bout en bout (v1)
-
+	//Test de bout en bout
 	public static void main( String[] args ) throws InterruptedException {
 
 		// TODO : WatchDogs 
-		Queue<Attachment> messagesAttachments = new PriorityQueue<>(); // TODO : passer sur une PriorityQueue qui ordonne les attachments selon leur date
+		Queue<Attachment> messagesAttachments = new PriorityQueue<Attachment>(); // TODO : passer sur une PriorityQueue qui ordonne les attachments selon leur date
 
 		//Récupération de l'inbox (IMAP)
 		String host_receive = "ssl0.ovh.net"; // TODO : faire un while(true) pour interroger toutes les secondes la boite mail
@@ -46,7 +45,7 @@ public class toPdf
 
 		while(true) {
 
-			receiver.downloadEmailAttachments(host_receive, port_receive, userName_receive, password_receive); // TODO : récupérer uniquement le dernier email avec une PJ (utiliser la date la plus récente de la Queue)
+			receiver.downloadEmailAttachments(host_receive, port_receive, userName_receive, password_receive); // TODO : récupérer uniquement le dernier email avec une PJ (utiliser la date la plus récente de la Queue) -> Déjà fait avec lastDate dans EmailAttachmentRecever ?
 			int FIFOSize = messagesAttachments.size();
 			Attachment currentConversion = null; 
 			String[] attachmentsArray = null;

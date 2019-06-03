@@ -35,8 +35,6 @@ import com.sun.mail.imap.IMAPStore;
  * This program demonstrates how to download e-mail messages and save
  * attachments into files on disk.
  *
- * @author www.codejava.net
- *
  */
 public class EmailAttachmentReceiver {
 

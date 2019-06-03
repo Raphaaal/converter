@@ -37,7 +37,7 @@ public class Attachment implements Comparable<Attachment> {
 	public String toString() {
 		return "Attachment [name=" + name + ", sender=" + sender + ", date=" + date + "]";
 	}
-	@Override
+	
 	public int compareTo(Attachment attachment) {
 		if (this.date.before(attachment.getDate()))
 			return -1;
