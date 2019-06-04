@@ -10,6 +10,9 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
+import javax.mail.Message;
+import javax.mail.MessagingException;
+
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.xwpf.converter.pdf.PdfConverter;
 import org.apache.poi.xwpf.converter.pdf.PdfOptions;
@@ -21,18 +24,16 @@ import email.Attachment;
 import email.EmailAttachmentReceiver;
 import email.EmailAttachmentSender;
 
-public class toPdf
-{
+import com.sun.mail.imap.protocol.FLAGS;  
 
-	// DOCUMENTATION : https://github.com/ConvertAPI/convertapi-java
+public class toPdf {
 
-	//Test de bout en bout
-	public static void main( String[] args ) throws InterruptedException {
+	public static void main( String[] args ) throws InterruptedException, MessagingException {
 
 		// TODO : WatchDogs ? Crypto ?
 		Queue<Attachment> messagesAttachments = new PriorityQueue<Attachment>(); // TODO : passer sur une PriorityQueue qui ordonne les attachments selon leur date
 
-		//Récupération de l'inbox (IMAP)
+		// Get inbox (IMAP)
 		String host_receive = "ssl0.ovh.net"; // TODO : faire un while(true) pour interroger toutes les secondes la boite mail
 		String port_receive = "993";
 		String userName_receive = "topdf@middleman.paris";
@@ -45,36 +46,30 @@ public class toPdf
 
 		while(true) {
 
-			receiver.downloadEmailAttachments(host_receive, port_receive, userName_receive, password_receive); // TODO : récupérer uniquement le dernier email avec une PJ (utiliser la date la plus récente de la Queue) -> Déjà fait avec lastDate dans EmailAttachmentRecever ?
+			receiver.downloadEmailAttachments(host_receive, port_receive, userName_receive, password_receive);
 			int FIFOSize = messagesAttachments.size();
 			Attachment currentConversion = null; 
 			String[] attachmentsArray = null;
 
-			System.out.println("FIFOSize: " + FIFOSize);
+			System.out.println("Number of emails: " + FIFOSize);
 
 			for (int k = 0; k < FIFOSize; k++) {
-				System.out.println("Iteration: " + k);
-
-				//Conversion with convertapi.com Java client
 				currentConversion = messagesAttachments.poll();				
-				// Separate each file name
-				attachmentsArray = currentConversion.getName().split(",");
+				attachmentsArray = currentConversion.getName().split(","); // Separate each file name
+
 				for (int i = 0; i < attachmentsArray.length; i++) {
-					System.out.println(attachmentsArray[i]);
-
-
-					// TODO : re générer l'API key
-					ConvertApi.convertFile("./filesToConvert/" + attachmentsArray[i], "./filesConverted/" + attachmentsArray[i] + ".pdf", "3q5DgWSGJshJhRKA"); // TODO : récupérer le nom du fichier téléchargé depuis l'inbox pour indiquer son path dynamiquement
-
-					// OLD - ConvertApi.convertFile("./filesToConvert/" + attachmentsArray[0], "./filesConverted/" + attachmentsArray[0] + ".pdf", "3q5DgWSGJshJhRKA"); // TODO : récupérer le nom du fichier téléchargé depuis l'inbox pour indiquer son path dynamiquement
-					System.out.println("Conversion done.");
+					System.out.println("Attachment n°: " + i + " - " + attachmentsArray[i]);
+					try {
+						ConvertApi.convertFile("./filesToConvert/" + attachmentsArray[i], "./filesConverted/" + attachmentsArray[i] + ".pdf", "3q5DgWSGJshJhRKA"); // TODO : récupérer le nom du fichier téléchargé depuis l'inbox pour indiquer son path dynamiquement
+						System.out.println("Conversion done.");
+					}
+					catch (Exception ex) {
+						System.out.println("Could not convert file.");
+						ex.printStackTrace();
+					}
 				}
 
-			}
-
-			if(FIFOSize > 0) {
-
-				//Envoi du fichier converti
+				// Send converted file
 				String host_send = "SSL0.OVH.NET";
 				String port_send = "465";
 				String mailFrom_send = "topdf@middleman.paris";
@@ -89,9 +84,6 @@ public class toPdf
 					attachFiles[i] = "./filesConverted/" + attachmentsArray[i] + ".pdf";
 				}
 
-				// OLD - converts only a single attachment per email
-				//attachFiles[0] = "./filesConverted/" + attachmentsArray[0] + ".pdf";
-
 				try {
 					EmailAttachmentSender.sendEmailWithAttachments(host_send, port_send, mailFrom_send, password_send, mailTo, subject, message, attachFiles);
 					System.out.println("Email sent.");
@@ -102,9 +94,22 @@ public class toPdf
 					ex.printStackTrace();
 					System.out.println("-------------------------");
 				}
+
 			}
-			// TODO : supprimer les fichiers à la fin
+
+			// Delete files to convert and files converted
+			if (attachmentsArray != null) {
+				for (int i = 0; i < attachmentsArray.length; i++) {
+					File fileToConvert = new File("./filesToConvert/" + attachmentsArray[i]);
+					File fileConverted = new File("./filesConverted/" + attachmentsArray[i] + ".pdf");
+					if(fileToConvert.exists())
+						fileToConvert.delete();
+					if(fileConverted.exists())
+						fileConverted.delete();
+				}
+			}
+
+			Thread.currentThread().sleep(5000); // Pause btw. each inbox check
 		}
 	}
-
 }
