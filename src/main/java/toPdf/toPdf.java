@@ -50,23 +50,28 @@ public class toPdf
 			Attachment currentConversion = null; 
 			String[] attachmentsArray = null;
 
-			for (int i = 0; i < FIFOSize; i++) {
+			System.out.println("FIFOSize: " + FIFOSize);
+
+			for (int k = 0; k < FIFOSize; k++) {
+				System.out.println("Iteration: " + k);
 
 				//Conversion with convertapi.com Java client
-				currentConversion = messagesAttachments.poll();
+				currentConversion = messagesAttachments.poll();				
+				// Separate each file name
 				attachmentsArray = currentConversion.getName().split(",");
-				
-				System.out.println(attachmentsArray[i]);
-				// OLD - System.out.println(attachmentsArray[0]);
+				for (int i = 0; i < attachmentsArray.length; i++) {
+					System.out.println(attachmentsArray[i]);
 
-				// TODO : re générer l'API key
-				ConvertApi.convertFile("./filesToConvert/" + attachmentsArray[i], "./filesConverted/" + attachmentsArray[i] + ".pdf", "3q5DgWSGJshJhRKA"); // TODO : récupérer le nom du fichier téléchargé depuis l'inbox pour indiquer son path dynamiquement
 
-				// OLD - ConvertApi.convertFile("./filesToConvert/" + attachmentsArray[0], "./filesConverted/" + attachmentsArray[0] + ".pdf", "3q5DgWSGJshJhRKA"); // TODO : récupérer le nom du fichier téléchargé depuis l'inbox pour indiquer son path dynamiquement
-				System.out.println("Conversion done.");
+					// TODO : re générer l'API key
+					ConvertApi.convertFile("./filesToConvert/" + attachmentsArray[i], "./filesConverted/" + attachmentsArray[i] + ".pdf", "3q5DgWSGJshJhRKA"); // TODO : récupérer le nom du fichier téléchargé depuis l'inbox pour indiquer son path dynamiquement
+
+					// OLD - ConvertApi.convertFile("./filesToConvert/" + attachmentsArray[0], "./filesConverted/" + attachmentsArray[0] + ".pdf", "3q5DgWSGJshJhRKA"); // TODO : récupérer le nom du fichier téléchargé depuis l'inbox pour indiquer son path dynamiquement
+					System.out.println("Conversion done.");
+				}
 
 			}
-			
+
 			if(FIFOSize > 0) {
 
 				//Envoi du fichier converti

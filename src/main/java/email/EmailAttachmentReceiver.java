@@ -105,25 +105,32 @@ public class EmailAttachmentReceiver {
 					// content may contain attachments
 					Multipart multiPart = (Multipart) message.getContent();
 					int numberOfParts = multiPart.getCount();
+					
 					for (int partCount = 0; partCount < numberOfParts; partCount++) {
+						
 						MimeBodyPart part = (MimeBodyPart) multiPart.getBodyPart(partCount);
 						if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
 							// this part is attachment
 							String encodedAttachmentName = MimeUtility.decodeText(part.getFileName()); 
 							String decodedAttachmentname=  Normalizer.normalize(encodedAttachmentName , Normalizer.Form.NFC);
 							String fileName = decodedAttachmentname;
+							System.out.println("fileName: "+ fileName);
 							// TODO : Pb lorsque le mail contient plusieurs PJ
-							attachFiles += fileName + ", ";
-							part.saveFile(saveDirectory + File.separator + fileName);
+							attachFiles += fileName + ",";
+							File fileToSave = new File(fileName);
+							// OLD - part.saveFile(saveDirectory + File.separator + fileName);
+							part.saveFile(saveDirectory + File.separator + fileToSave);
 						} else {
 							// this part may be the message content
 							messageContent = part.getContent().toString();
 						}
-						if (!attachFiles.equals("") && sentDate.after(lastDate)) {
-							String sender = from.substring(from.indexOf("<") + 1, from.indexOf(">"));
-							messagesAttachments.offer(new Attachment(attachFiles, sender, sentDate));
-							lastDate = sentDate;
-						}
+						
+					}
+					if (!attachFiles.equals("") && sentDate.after(lastDate)) {
+						String sender = from.substring(from.indexOf("<") + 1, from.indexOf(">"));
+						messagesAttachments.offer(new Attachment(attachFiles, sender, sentDate));
+						System.out.println("messagesAttachments: " + messagesAttachments);
+						lastDate = sentDate;
 					}
 
 					if (attachFiles.length() > 1) {
@@ -137,7 +144,7 @@ public class EmailAttachmentReceiver {
 					}
 				}
 				
-				/*
+				
 				// print out details of each message
 				System.out.println("Message #" + (i + 1) + ":");
 				System.out.println("\t From: " + from);
@@ -145,7 +152,8 @@ public class EmailAttachmentReceiver {
 				System.out.println("\t Sent Date: " + sentDate);
 				System.out.println("\t Message: " + messageContent);
 				System.out.println("\t Attachments: " + attachFiles);
-				*/
+				System.out.println("-------------------------------");
+				
 			}
 
 			// disconnect
@@ -260,6 +268,7 @@ System.out.println("Text: " + message.getContent().toString());
 }
 
 			 */
+
 
 			//close the store and folder objects
 			//   emailFolder.close(false);
