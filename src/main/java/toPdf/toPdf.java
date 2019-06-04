@@ -29,14 +29,14 @@ public class toPdf
 	//Test de bout en bout
 	public static void main( String[] args ) throws InterruptedException {
 
-		// TODO : WatchDogs 
+		// TODO : WatchDogs ? Crypto ?
 		Queue<Attachment> messagesAttachments = new PriorityQueue<Attachment>(); // TODO : passer sur une PriorityQueue qui ordonne les attachments selon leur date
 
 		//Récupération de l'inbox (IMAP)
 		String host_receive = "ssl0.ovh.net"; // TODO : faire un while(true) pour interroger toutes les secondes la boite mail
 		String port_receive = "993";
 		String userName_receive = "topdf@middleman.paris";
-		String password_receive = "azertyuiop";
+		String password_receive = "@Azerty123";
 		String saveDirectory = "./filesToConvert/";
 
 		EmailAttachmentReceiver receiver = new EmailAttachmentReceiver();
@@ -55,11 +55,14 @@ public class toPdf
 				//Conversion with convertapi.com Java client
 				currentConversion = messagesAttachments.poll();
 				attachmentsArray = currentConversion.getName().split(",");
+				
+				System.out.println(attachmentsArray[i]);
+				// OLD - System.out.println(attachmentsArray[0]);
 
-				System.out.println(attachmentsArray[0]);
+				// TODO : re générer l'API key
+				ConvertApi.convertFile("./filesToConvert/" + attachmentsArray[i], "./filesConverted/" + attachmentsArray[i] + ".pdf", "3q5DgWSGJshJhRKA"); // TODO : récupérer le nom du fichier téléchargé depuis l'inbox pour indiquer son path dynamiquement
 
-
-				ConvertApi.convertFile("./filesToConvert/" + attachmentsArray[0], "./filesConverted/" + attachmentsArray[0] + ".pdf", "3q5DgWSGJshJhRKA"); // TODO : récupérer le nom du fichier téléchargé depuis l'inbox pour indiquer son path dynamiquement
+				// OLD - ConvertApi.convertFile("./filesToConvert/" + attachmentsArray[0], "./filesConverted/" + attachmentsArray[0] + ".pdf", "3q5DgWSGJshJhRKA"); // TODO : récupérer le nom du fichier téléchargé depuis l'inbox pour indiquer son path dynamiquement
 				System.out.println("Conversion done.");
 
 			}
@@ -70,20 +73,29 @@ public class toPdf
 				String host_send = "SSL0.OVH.NET";
 				String port_send = "465";
 				String mailFrom_send = "topdf@middleman.paris";
-				String password_send = "azertyuiop";
+				String password_send = "@Azerty123";
 				System.out.println(currentConversion.getSender());
-				String mailTo = currentConversion.getSender(); // TODO : récupérer l'email de l'utilisateur pour lui renvoyer le fichier converti dynamiquement
+				String mailTo = currentConversion.getSender();
 				String subject = "New email with attachments in PDF";
 				String message = "I have some attachments for you.";
-				String[] attachFiles = new String[1];
-				attachFiles[0] = "./filesConverted/" + attachmentsArray[0] + ".pdf";
+				String[] attachFiles = new String[attachmentsArray.length];
+				for (int i = 0; i < attachmentsArray.length; ++i) {
+					System.out.println("attachmentArray " + i + ": " + attachmentsArray[i]);
+					attachFiles[i] = "./filesConverted/" + attachmentsArray[i] + ".pdf";
+				}
+
+				// OLD - converts only a single attachment per email
+				//attachFiles[0] = "./filesConverted/" + attachmentsArray[0] + ".pdf";
 
 				try {
 					EmailAttachmentSender.sendEmailWithAttachments(host_send, port_send, mailFrom_send, password_send, mailTo, subject, message, attachFiles);
 					System.out.println("Email sent.");
+					System.out.println("-------------------------");
+
 				} catch (Exception ex) {
 					System.out.println("Could not send email.");
 					ex.printStackTrace();
+					System.out.println("-------------------------");
 				}
 			}
 			// TODO : supprimer les fichiers à la fin
