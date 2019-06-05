@@ -30,11 +30,9 @@ public class toPdf {
 
 	public static void main( String[] args ) throws InterruptedException, MessagingException {
 
-		// TODO : WatchDogs ? Crypto ?
-		Queue<Attachment> messagesAttachments = new PriorityQueue<Attachment>(); // TODO : passer sur une PriorityQueue qui ordonne les attachments selon leur date
-
+		Queue<Attachment> messagesAttachments = new PriorityQueue<Attachment>(); 
 		// Get inbox (IMAP)
-		String host_receive = "ssl0.ovh.net"; // TODO : faire un while(true) pour interroger toutes les secondes la boite mail
+		String host_receive = "ssl0.ovh.net"; 
 		String port_receive = "993";
 		String userName_receive = "topdf@middleman.paris";
 		String password_receive = "@Azerty123";
@@ -60,7 +58,7 @@ public class toPdf {
 				for (int i = 0; i < attachmentsArray.length; i++) {
 					System.out.println("Attachment n°: " + i + " - " + attachmentsArray[i]);
 					try {
-						ConvertApi.convertFile("./filesToConvert/" + attachmentsArray[i], "./filesConverted/" + attachmentsArray[i] + ".pdf", "3q5DgWSGJshJhRKA"); // TODO : récupérer le nom du fichier téléchargé depuis l'inbox pour indiquer son path dynamiquement
+						ConvertApi.convertFile("./filesToConvert/" + attachmentsArray[i], "./filesConverted/" + attachmentsArray[i] + ".pdf", "tm0Pujim5xPRYRYW");
 						System.out.println("Conversion done.");
 					}
 					catch (Exception ex) {
